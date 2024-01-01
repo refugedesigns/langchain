@@ -1,19 +1,23 @@
-import os
 from dotenv import dotenv_values
-import openai
-
-
+from langchain.llms.together import Together
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.output_parser import StrOutputParser
 
 config = dotenv_values(".env")
 TOGETHER_API_KEY = config["TOGETHER_API_KEY"]
 
-
-llm = openai.OpenAI(
-    api_key=TOGETHER_API_KEY,
-    base_url="https://api.together.xyz/v1",
-    model="mistralai/Mixtral-8x7B-Instruct-v0.1",
+llm = Together(
+    together_api_key=TOGETHER_API_KEY,
+    model="upstage/SOLAR-0-70b-16bit",
+    temperature=0.7,
+    max_tokens=2000,
+    top_k=1
 )
 
-result = llm("translate English to German: I love programming.")
-print(result)
+prompt = ChatPromptTemplate.from_template("tell me an interesting fact about {subject}")
 
+chain = prompt | llm | StrOutputParser()
+
+result = chain.invoke({"subject": "the sun"})
+
+print(result)
